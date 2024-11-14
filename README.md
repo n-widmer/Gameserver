@@ -30,7 +30,16 @@ preferable with the “WASD” or arrow keys.
 12. Homework can be developed in pairs of two students, allowing for 2 people to work on
 the 2 people’s project made specifically for 2 people and no less or more than 2 people.
 
+
 14. The project will be evaluated during class time by the instructor and the grader together.
 With students running the server and client side on two separate computers.
 
 16. Project must be submitted to canvas as a .rar or .zip file containing all the source codes.
+
+
+In order to run the program fork the repository to your local machine.
+- Open repository
+- Split terminal
+- run the command python3 GameServer.py for the server side terminal
+- run the command python3 GameClient.py on the client side terminal
+  

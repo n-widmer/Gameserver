@@ -1,3 +1,6 @@
+
+*** PROJECT IS A WORK IN PROGRESS CURRENTLY ***
+
 Here is the list of project requirements per my professor:
 
 Using the code provided with the homework, and the pygame python library, continue

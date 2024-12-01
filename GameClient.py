@@ -43,8 +43,8 @@ def client_program():
 
 
     print("trying to connect to server")
-    host = "10.95.10.244"
-    port = 5001   # socket server port number
+    host = ""
+    port = 6999   # socket server port number
 
     client_socket = socket.socket()  # instantiate
     client_socket.connect((host, port))  # connect to the server

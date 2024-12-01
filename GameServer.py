@@ -7,7 +7,8 @@ import pygame
 from pygame.locals import *  #Allows for game to be made
 import socket    #Allows for basic networking features
 import sys   
-import random    
+import random   
+import os 
 
 
 
@@ -23,9 +24,17 @@ bitcoinYPos = 0 - pixel
 bucketXPos = (gameWidth / 2) - (pixel / 2)
 bucketYPos = gameHeight - pixel
 
+score = 0
+score_increment = 1
+
+start_time = 0
+
+bucketSpeedChange = 20
+
 #runs game loop and updates display
 def GameThread():
     pygame.init()
+    pygame.font.init()
 
     global gameWidth
     global gameHeight
@@ -33,6 +42,10 @@ def GameThread():
     global bitcoinYPos
     global bucketXPos
     global bucketYPos
+    global score 
+    global score_increment
+    global start_time
+    global bucketSpeedChange
 
     # Set the screen bounds
     screen = pygame.display.set_mode((gameWidth, gameHeight))
@@ -65,8 +78,9 @@ def GameThread():
 
 
     # To set the speed of the bitcoinImage when falling
-    bitcoinXPosChange = 0
     bitcoinYPosChange = 2
+    bitcoinXPosChange = 2
+
 
     # Function definition for setting image at a particular coord
     def bitCoin(x, y):
@@ -74,26 +88,62 @@ def GameThread():
         screen.blit(bitcoinImage, (x, y))
     
     def haveCollided():
-        global bitcoinYPos
+        global bitcoinYPos, bitcoinXPos
         if bucketYPos < (bitcoinYPos + pixel):
 
             if ((bucketXPos > bitcoinXPos and bucketXPos < (bitcoinXPos + pixel)) or 
                 ((bucketXPos + pixel) > bitcoinXPos and (bucketXPos + pixel) < (bitcoinXPos + pixel))):
-                bitcoinYPos = gameHeight + 1000
+                bitcoinYPos = 0 - pixel
+                bitcoinXPos = random.randint(0, (gameWidth - pixel))
+                return True
+            
+        return False
 
     clock = pygame.time.Clock()
 
+    if start_time is None:
+        start_time = pygame.time.get_ticks()
 
-    
+
+    last_speed_increase_time = 0
     running = True
     while running:
         # Paste background to window
+        
         screen.blit(backgroundImg, (0,0))
+        global score
+
+        #set global font
+        font = pygame.font.Font('assets/Geist_Mono,Mulish/Geist_Mono/GeistMono-VariableFont_wght.ttf', 36)
+
+        
+        #calculate time since game has started
+        elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
+
+        #formatting
+        minutes = int(elapsed_time // 60)
+        seconds = int(elapsed_time % 60)
+        time_text = f"{minutes:02}:{seconds:02}"
+
+        #display the time on screen
+        time_surface = font.render(f'Time: {time_text}', True, (255, 255, 255))
+        screen.blit(time_surface, ((gameWidth - 270), 10))
+        
+        #render the score on the screen
+        score_text = font.render(f'Score: {score}', True, (255, 255, 255))
+        screen.blit(score_text, (10, 10))
+        
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+            #update speed of bitcoin and bucket every 10 sec
+        if elapsed_time - last_speed_increase_time >= 10:
+            bitcoinYPosChange += 1
+            bucketSpeedChange += 5
+            last_speed_increase_time = elapsed_time
 
 
         if bucketXPos >= (gameWidth - pixel):
@@ -103,15 +153,24 @@ def GameThread():
             bucketXPos = 0
 
         if bitcoinYPos >= gameHeight:
-            bitcoinYPos = 0 - pixel
-            bitcoinXPos = random.randint(0, (gameWidth - pixel))
+            font_gameover =  pygame.font.Font('assets/Geist_Mono,Mulish/Geist_Mono/GeistMono-VariableFont_wght.ttf', 64)
+            gameOver_text = font_gameover.render("GAME OVER!", True, (255, 0, 0))
+            screen.blit(gameOver_text, (gameWidth / 2 - 200, gameHeight / 2 - 50))
+            pygame.display.update()
+            pygame.time.wait(2000)
+            running = False
+            continue
+
 
         bucketXPos += bucketXPosChange
         bitcoinYPos += bitcoinYPosChange
 
         player(bucketXPos, (bucketYPos - 60))
         bitCoin(bitcoinXPos, bitcoinYPos)
-        haveCollided()
+        if haveCollided():
+            score += score_increment
+
+        
 
         pygame.display.update()
         clock.tick(60)
@@ -126,6 +185,8 @@ def GameThread():
 def ServerThread():
     global bucketYPos
     global bucketXPos
+    global bucketSpeedChange
+
     # get the hostname
     host = socket.gethostbyname(socket.gethostname())
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -133,7 +194,7 @@ def ServerThread():
     host = s.getsockname()[0]
     s.close()
     print(host)
-    port = 5001  # initiate port no above 1024
+    port = 6999  # initiate port no above 1024
 
     server_socket = socket.socket()  # get instance
     # look closely. The bind() function takes tuple as argument
@@ -152,13 +213,13 @@ def ServerThread():
         
         print("from connected user: " + str(data))
         if(data == 'w'):
-            bucketYPos -= 15
+            bucketYPos -= bucketSpeedChange
         if(data == 's'):
-            bucketYPos += 15
+            bucketYPos += bucketSpeedChange
         if(data == 'a'):
-            bucketXPos -= 15
+            bucketXPos -= bucketSpeedChange
         if(data == 'd'):
-            bucketXPos += 15
+            bucketXPos += bucketSpeedChange
     conn.close()  # close the connection
 
 

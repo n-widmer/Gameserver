@@ -1,6 +1,4 @@
 
-*** PROJECT IS A WORK IN PROGRESS CURRENTLY ***
-
 Here is the list of project requirements per my professor:
 
 Using the code provided with the homework, and the pygame python library, continue
@@ -41,7 +39,8 @@ With students running the server and client side on two separate computers.
 
 
 In order to run the program fork the repository to your local machine.
-- Open repository
+- Open repository on your local machine in your prefered IDE
+- enter the current ip address of your machine into the "host" variable on the GameClient.py
 - Split terminal
 - run the command python3 GameServer.py for the server side terminal
 - run the command python3 GameClient.py on the client side terminal
